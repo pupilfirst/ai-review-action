@@ -118,8 +118,8 @@ INPUT_PROMPT
 
   def default_output_prompt
     <<-OUTPUT_PROMPT
-    Please use the review ai_review function to provide feedback to the student.
-    If the student submission is not related to question share a genric feedback
+    If the student submission is not related to question share a genric feedback.
+    Strictly use the ai_review function format to provide feedback to the student.
     OUTPUT_PROMPT
   end
 end
