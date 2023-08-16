@@ -43,7 +43,24 @@ class OpenAIClient
             temperature: @temperature,
         })
     puts response
-    response.dig("choices", 0, "message", "content")
+    message = response.dig("choices", 0, "message")
+
+    if message["role"] == "assistant" && message["function_call"]
+      function_name = message.dig("function_call", "name")
+      args =
+        JSON.parse(
+          message.dig("function_call", "arguments"),
+          { symbolize_names: true },
+        )
+
+      case function_name
+      when "review"
+        puts "Reviewing submission..."
+        puts "Status: #{args[:status]}"
+        puts "Feedback: #{args[:feedback]}"
+        args
+      end
+    end
   end
 
   def replace_placeholder(text, placeholder, value)
@@ -96,19 +113,5 @@ The student's submissions will be an array of objects following the provided sch
 }
 ```
 INPUT_PROMPT
-  end
-
-  def default_output_prompt
-<<-OUTPUT_PROMPT
-Please provide your response in the following JSON format (adhere to the format strictly):
-
-```json
-{
-    "status": "\"passed\" or \"failed\"",
-    "feedback": "Detailed feedback for the student in markdown format. Aim for a human-like explanation as much as possible"
-}
-```
-If the student submission is not related to question share a genric feedback
-OUTPUT_PROMPT
   end
 end
