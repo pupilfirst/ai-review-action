@@ -18,7 +18,7 @@ class OpenAIClient
             ],
             functions: [
               {
-                name: "review",
+                name: "ai_review",
                 description: "Review the student submission and provide feedback",
                 parameters: {
                   type: :object,
@@ -54,7 +54,7 @@ class OpenAIClient
         )
 
       case function_name
-      when "review"
+      when "ai_review"
         puts "Reviewing submission..."
         puts "Status: #{args[:status]}"
         puts "Feedback: #{args[:feedback]}"
@@ -73,6 +73,7 @@ class OpenAIClient
     .gsub("${INPUT_DESCRIPTION}", default_input_prompt)
     .gsub("${USER_PROMPT}", default_user_prompt)
     .gsub("${SUBMISSION}", "#{Submission.new.checklist}")
+    .gsub("${OUTPUT_DESCRIPTION}", default_output_prompt)
   end
 
   def system_prompt_default
@@ -113,5 +114,12 @@ The student's submissions will be an array of objects following the provided sch
 }
 ```
 INPUT_PROMPT
+  end
+
+  def default_output_prompt
+    <<-OUTPUT_PROMPT
+    Please use the review ai_review function to provide feedback to the student.
+    If the student submission is not related to question share a genric feedback
+    OUTPUT_PROMPT
   end
 end
