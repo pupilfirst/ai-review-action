@@ -16,6 +16,30 @@ class OpenAIClient
             messages: [
                 { role: "system", content: prompt }
             ],
+            functions: [
+              {
+                name: "review",
+                description: "Review the student submission and provide feedback",
+                parameters: {
+                  type: :object,
+                  properties: {
+                    feedback: {
+                      type: :string,
+                      description: "Detailed feedback for the student in markdown format. Aim for a human-like explanation as much as possible",
+                    },
+                    status: {
+                      type: :string,
+                      enum: ["passed", "failed"],
+                      description: "The status of the submission \"passed\" or \"failed\"",
+                    }
+                  },
+                  required: [
+                    "status",
+                    "feedback"
+                  ],
+                },
+              },
+            ],
             temperature: @temperature,
         })
     puts response
@@ -32,7 +56,6 @@ class OpenAIClient
     .gsub("${INPUT_DESCRIPTION}", default_input_prompt)
     .gsub("${USER_PROMPT}", default_user_prompt)
     .gsub("${SUBMISSION}", "#{Submission.new.checklist}")
-    .gsub("${OUTPUT_DESCRIPTION}", default_output_prompt)
   end
 
   def system_prompt_default
