@@ -56,16 +56,16 @@ module PupilfirstAPI
     end
 
     def grades_based_on(status)
-      @submission.evaluation_criteria.map do |criteria|
-        {
-          evaluationCriterionId: criteria['id'],
-          grade: grade_for(criteria, status)
-        }
+      if status == 'passed'
+        return @submission.evaluation_criteria.map do |criteria|
+          {
+            evaluationCriterionId: criteria['id'],
+            grade: criteria['max_grade']
+          }
+        end
+      else
+        return []
       end
-    end
-
-    def grade_for(criteria, status)
-      status == 'passed' ? criteria['pass_grade'] : criteria['pass_grade'] - 1
     end
 
     def create_grading(variables)
