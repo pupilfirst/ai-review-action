@@ -19,7 +19,7 @@ module PupilfirstAPI
   end
 
   GradeMutation = API::Client.parse <<-'GRAPHQL'
-    mutation($submissionId: ID!, $grades: [GradeInput!]!, $checklist: JSON!, $feedback: String) {
+    mutation($submissionId: ID!, $grades: [GradeInput!], $checklist: JSON!, $feedback: String) {
       createGrading(submissionId: $submissionId, grades: $grades, checklist: $checklist, feedback: $feedback) {
         success
       }
@@ -37,10 +37,13 @@ module PupilfirstAPI
 
       variables = {
         submissionId: @submission.id,
-        grades: grades_based_on(result['status']),
         checklist: @submission.checklist,
         feedback: result['feedback']
       }
+      grades = grades_based_on(result['status'])
+      if grades.length > 0
+        variables[:grades] = grades
+      end
 
       puts "variables: #{variables}" if @test_mode
 
