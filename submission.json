@@ -20,7 +20,7 @@
       {
         "id": 3361,
         "name": "Accepted",
-        "max_grade": 2,
+        "max_grade": 1,
         "grade_labels": [
           { "grade": 1, "label": "Yes" }
         ]
