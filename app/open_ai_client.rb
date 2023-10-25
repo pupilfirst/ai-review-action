@@ -1,11 +1,34 @@
 require 'openai'
+require 'yaml'
 
 class OpenAIClient
   def initialize
     @client = OpenAI::Client.new
-    @model = ENV.fetch('OPEN_AI_MODEL', "gpt-3.5-turbo")
-    @temperature = ENV.fetch('OPEN_AI_TEMPERATURE', 0.1)
-    @system_prompt = ENV.fetch('SYSTEM_PROMPT', system_prompt_default)
+
+    @config = extract_relevant_step_configuration
+    @model = @config.fetch('OPEN_AI_MODEL', "gpt-3.5-turbo")
+    @temperature = @config.fetch('OPEN_AI_TEMPERATURE', 0.1).to_f
+    @system_prompt = @config.fetch('SYSTEM_PROMPT', system_prompt_default)
+  end
+
+  def extract_relevant_step_configuration
+    # Load workflow YAML file from the path specified in the environment variable or the default path.
+    file_path = ENV.fetch('WORKFLOW_FILE_PATH', './.github/workflows/ci.js.yml')
+
+    # Find the job step that uses 'pupilfirst/ai-review-action' or has an ID containing 'ai-review'.
+    content = YAML.safe_load(File.read(file_path))
+
+    @config = content.dig('jobs', 'test', 'steps').find do |step|
+      ( step['uses']&.include?('pupilfirst/ai-review-action') || step['id']&.include?('ai-review') )
+    end['env']
+
+    if @config.nil?
+      p content
+
+      raise 'Could not read configuration from environment variables. Please check the workflow file.'
+    end
+
+    @config
   end
 
   def ask
@@ -22,10 +45,6 @@ class OpenAIClient
     response.dig("choices", 0, "message", "content")
   end
 
-  def replace_placeholder(text, placeholder, value)
-    text.gsub("${#{placeholder}}", value)
-  end
-
   def prompt
     @system_prompt
     .gsub("${ROLE_PROMPT}", default_role_prompt)
@@ -37,13 +56,13 @@ class OpenAIClient
 
   def system_prompt_default
 <<-SYSTEM_PROMPT
-#{ENV.fetch("ROLE_PROMPT", "${ROLE_PROMPT}")}
+#{@config.fetch("ROLE_PROMPT", "${ROLE_PROMPT}")}
 
-#{ENV.fetch("INPUT_DESCRIPTION", "${INPUT_DESCRIPTION}")}
+#{@config.fetch("INPUT_DESCRIPTION", "${INPUT_DESCRIPTION}")}
 
-#{ENV.fetch("USER_PROMPT", "${USER_PROMPT}")}
+#{@config.fetch("USER_PROMPT", "${USER_PROMPT}")}
 
-#{ENV.fetch("OUTPUT_DESCRIPTION", "${OUTPUT_DESCRIPTION}")}
+#{@config.fetch("OUTPUT_DESCRIPTION", "${OUTPUT_DESCRIPTION}")}
 SYSTEM_PROMPT
   end
 
@@ -77,15 +96,16 @@ INPUT_PROMPT
 
   def default_output_prompt
 <<-OUTPUT_PROMPT
-Please provide your response in the following JSON format (adhere to the format strictly):
+Please provide your response in the following JSON format. Adhere to the format strictly and escape all line-breaks within strings using \\\\n.
 
 ```json
 {
     "status": "\"passed\" or \"failed\"",
-    "feedback": "Detailed feedback for the student in markdown format. Aim for a human-like explanation as much as possible"
+    "feedback": "Detailed feedback for the student in markdown format. Aim for a human-like explanation as much as possible."
 }
 ```
-If the student submission is not related to question share a genric feedback
+
+If the student submission is not related to question, share generic feedback.
 OUTPUT_PROMPT
   end
 end
