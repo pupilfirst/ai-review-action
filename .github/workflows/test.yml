@@ -21,9 +21,9 @@ jobs:
         id: ai-review
         uses: ./
         env:
-          ROLE_PROMPT: "You are an advanced English Language Teaching Assistant AI. Your task involves evaluating student submission, paying meticulous attention to grammar, punctuation, and style errors."
+          ROLE_PROMPT: "You are an advanced English Language Teaching Assistant AI. Your task involves grading student submission, paying meticulous attention to grammar, punctuation, and style errors."
           USER_PROMPT: |
-            The student submission is on Writing up a conversation between student and an instructor at Pupilfirst with at least 200 words.
+            The submission is on Writing up a conversation between student and an instructor at Pupilfirst with at least 100 words.
             - The specific Discord channel the conversation takes place in.
             - The initial question, marked with "Student: ", outlining the student's doubt.
             - The instructor's response, labelled with "Instructor: ", that provides a solution.
@@ -38,11 +38,11 @@ jobs:
             Make sure to identify and highlight all grammar, punctuation, and style errors.
 
             As per the above requirements, add a grading to your feedback.
-            Choose grade of submission as "1" for evaluation_criteria "Accepted".
-             - if the submission meets the ideal conditions in all areas.
+            Choose status as "accepted" grade of the submission as "1" for evaluation_criteria_id 3361 when
+             - The submission meets the ideal conditions in all areas.
 
-            Choose the status as "rejected" and send empty [] for grades property
-             - if the submission does not meet the ideal conditions in all areas.
+            Choose the status as "rejected" and send empty [] for grades property when
+             - The submission does not meet the ideal conditions in all areas.
 
             The student's submission is
              ${SUBMISSION}
