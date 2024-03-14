@@ -1,4 +1,8 @@
 class Reviewer
+  def initialize(submission)
+    @submission = submission
+  end
+
   def create_feedback
     {
       type: "function",
@@ -10,7 +14,7 @@ class Reviewer
           properties: {
             feedback: {
               type: "string",
-              description: "The feedback for student submission (in Markdown)."
+              description: "The feedback for student submission (in Markdown), should align precisely with the rules and guidelines outlined in the prompt for feedback and evaluation of the submission."
             }
           },
           required: ["feedback"]
@@ -34,7 +38,7 @@ class Reviewer
             },
             feedback: {
               type: "string",
-              description: "The feedback for student submission (in Markdown)."
+              description: "The feedback for student submission (in Markdown), should align precisely with the rules and guidelines outlined in the prompt for feedback and evaluation of the submission."
             },
             grades: {
               type: "array",
@@ -44,7 +48,7 @@ class Reviewer
                 properties: {
                   evaluationCriterionId: {
                     type: "string",
-                    enum: Submission.new.evaluation_criteria_ids,
+                    enum: @submission.evaluation_criteria_ids,
                     description: "The Id of an evaluation criterion. This should be one of the evaluation criteria Ids of the submission."
                   },
                   grade: {
@@ -64,5 +68,9 @@ class Reviewer
 
   def available_tools
     [create_feedback, create_grading]
+  end
+
+  def tool_choice
+    @submission.evaluation_criteria.any? ? create_grading : create_feedback
   end
 end

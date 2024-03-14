@@ -10,7 +10,9 @@ class OpenAIClient
     @model = @config.fetch("OPEN_AI_MODEL", "gpt-3.5-turbo")
     @temperature = @config.fetch("OPEN_AI_TEMPERATURE", 0.1).to_f
     @system_prompt = @config.fetch("SYSTEM_PROMPT", system_prompt_default)
+
     @submission = Submission.new
+    @reviewer = Reviewer.new(@submission)
   end
 
   def extract_relevant_step_configuration
@@ -41,7 +43,8 @@ class OpenAIClient
         messages: [
           {role: "system", content: prompt}
         ],
-        tools: Reviewer.new.available_tools,
+        tools: @reviewer.available_tools,
+        tool_choice: @reviewer.tool_choice,
         temperature: @temperature
       }
     )
